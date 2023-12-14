@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name="address")
+@Table(name = "address")
 @Getter
 @Setter
 public class Address {
@@ -28,7 +28,7 @@ public class Address {
 
     @Column(name = "zip_code")
     private String zipCode;
-
+    // https://cursohibernate.es/doku.php?id=unidades:03_relaciones:01_uno_a_uno_direccional
     @OneToOne
     @PrimaryKeyJoinColumn
     private Order order;
