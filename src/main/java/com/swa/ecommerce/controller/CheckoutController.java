@@ -7,14 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin("http://localhost:4200")
+// @CrossOrigin("http://localhost:4200")
 @RestController
 @RequestMapping(value = "/api/checkout")
 public class CheckoutController {
 
     private CheckoutService checkoutService;
 
-    @Autowired
     public CheckoutController(CheckoutService _checkoutService) {
         this.checkoutService = _checkoutService;
     }

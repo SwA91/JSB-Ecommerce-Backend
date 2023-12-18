@@ -1,37 +1,38 @@
 package com.swa.ecommerce.config;
 
-import com.swa.ecommerce.entity.Country;
-import com.swa.ecommerce.entity.Product;
-import com.swa.ecommerce.entity.ProductCategory;
-import com.swa.ecommerce.entity.State;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.metamodel.EntityType;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.ArrayList;
+import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
-import org.springframework.data.rest.core.mapping.ExposureConfigurer;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import com.swa.ecommerce.entity.Country;
+import com.swa.ecommerce.entity.Product;
+import com.swa.ecommerce.entity.ProductCategory;
+import com.swa.ecommerce.entity.State;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.metamodel.EntityType;
 
 @Configuration
 public class MyDataRestConfig implements RepositoryRestConfigurer {
 
-    private EntityManager entitiyManager;
+    @Value("${allowed.origins}")
+    private String[] theAllowedOrigins;
+    private EntityManager entityManager;
 
-    @Autowired
-    public MyDataRestConfig(EntityManager theEntityManager){
-        entitiyManager = theEntityManager;
+    public MyDataRestConfig(EntityManager theEntityManager) {
+        entityManager = theEntityManager;
     }
+
     @Override
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
-        // RepositoryRestConfigurer.super.configureRepositoryRestConfiguration(config, cors);
 
-        HttpMethod[] theUnsupportedActions = {HttpMethod.PUT, HttpMethod.POST, HttpMethod.DELETE};
+        HttpMethod[] theUnsupportedActions = { HttpMethod.PUT, HttpMethod.POST, HttpMethod.DELETE, HttpMethod.PATCH };
 
         // disabled HTTP methods for Product, ProductCategory: PUT, POST, DELETE
         disabledHttpMethod(Product.class, config, theUnsupportedActions);
@@ -41,26 +42,30 @@ public class MyDataRestConfig implements RepositoryRestConfigurer {
 
         // call an internal helper method
         exposeIds(config);
+
+        // configure cors mapping
+        cors.addMapping(config.getBasePath() + "/**").allowedOrigins(theAllowedOrigins);
     }
 
-    private static void disabledHttpMethod(Class theClass, RepositoryRestConfiguration config, HttpMethod[] theUnsupportedActions) {
+    private static void disabledHttpMethod(Class theClass, RepositoryRestConfiguration config,
+            HttpMethod[] theUnsupportedActions) {
         config.getExposureConfiguration()
                 .forDomainType(theClass)
-                .withItemExposure((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions))
-                .withCollectionExposure((metdata, httpMethods) -> httpMethods.disable(theUnsupportedActions));
+                .withItemExposure((metadata, httpMethods) -> httpMethods.disable(theUnsupportedActions))
+                .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable(theUnsupportedActions));
     }
 
     private void exposeIds(RepositoryRestConfiguration config) {
         // expose entity ids
 
         // get a list of all entitiy clases from the entity manager
-        Set<EntityType<?>> entities = entitiyManager.getMetamodel().getEntities();
+        Set<EntityType<?>> entities = entityManager.getMetamodel().getEntities();
 
         // create an array of the entitity types
         ArrayList<Class> entityClasses = new ArrayList<>();
 
         // get the entity types for the entities
-        for(EntityType tempEntityType: entities) {
+        for (EntityType tempEntityType : entities) {
             entityClasses.add(tempEntityType.getJavaType());
         }
 
