@@ -1,17 +1,27 @@
 package com.swa.ecommerce.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.PaymentIntent;
 import com.swa.ecommerce.dao.CustomerRepository;
+import com.swa.ecommerce.dto.PaymentInfo;
 import com.swa.ecommerce.dto.Purchase;
 import com.swa.ecommerce.dto.PurchaseResponse;
 import com.swa.ecommerce.entity.Customer;
 import com.swa.ecommerce.entity.Order;
 import com.swa.ecommerce.entity.OrderItem;
-import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.util.Set;
-import java.util.UUID;
+import jakarta.transaction.Transactional;
 
 @Service
 public class CheckoutServiceImpl implements CheckoutService {
@@ -19,9 +29,12 @@ public class CheckoutServiceImpl implements CheckoutService {
     private CustomerRepository customerRepository;
 
     // es opcional el autowired porque solo hay un constructor
-    @Autowired
-    public CheckoutServiceImpl(CustomerRepository _customerRepository) {
+    public CheckoutServiceImpl(CustomerRepository _customerRepository,
+            @Value("${stripe.key.secret}") String secretKey) {
         this.customerRepository = _customerRepository;
+
+        // initialize Stripe API with secret key
+        Stripe.apiKey = secretKey;
     }
 
     @Override
@@ -67,5 +80,18 @@ public class CheckoutServiceImpl implements CheckoutService {
     private String generateOrderTrackingNumber() {
         // generate a random UUID number (UUID version-4)
         return UUID.randomUUID().toString();
+    }
+
+    @Override
+    public PaymentIntent createPaymentIntent(PaymentInfo paymentInfo) throws StripeException {
+        List<String> paymentMethodTypes = new ArrayList<>();
+        // solo aceptaremos credit card
+        paymentMethodTypes.add("card");
+        Map<String, Object> params = new HashMap<>();
+        params.put("amount", paymentInfo.getAmount());
+        params.put("currency", paymentInfo.getCurrency());
+        params.put("payment_method_types", paymentMethodTypes);
+
+        return PaymentIntent.create(params);
     }
 }
