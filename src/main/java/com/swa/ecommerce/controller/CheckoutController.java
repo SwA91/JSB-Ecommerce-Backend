@@ -1,5 +1,7 @@
 package com.swa.ecommerce.controller;
 
+import java.util.logging.Logger;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import com.swa.ecommerce.service.CheckoutService;
 @RestController
 @RequestMapping(value = "/api/checkout")
 public class CheckoutController {
+    private Logger logger = Logger.getLogger(getClass().getName());
 
     private CheckoutService checkoutService;
 
@@ -29,6 +32,7 @@ public class CheckoutController {
 
     @PostMapping("/payment-intent")
     public ResponseEntity<String> createPaymentIntent(@RequestBody PaymentInfo paymentInfo) throws StripeException {
+        logger.info("paymentInfo.amount: " + paymentInfo.getAmount());
         PaymentIntent paymentIntent = checkoutService.createPaymentIntent(paymentInfo);
         String paymentStr = paymentIntent.toJson();
         return new ResponseEntity<>(paymentStr, HttpStatus.OK);
