@@ -8,6 +8,6 @@ import lombok.Data;
 @Data
 public class PaymentInfo {
 
-    private int amount;
+    private int amount; // representado en centimos
     private String currency;
 }

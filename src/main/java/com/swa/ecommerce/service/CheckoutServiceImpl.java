@@ -29,7 +29,8 @@ public class CheckoutServiceImpl implements CheckoutService {
     private CustomerRepository customerRepository;
 
     // es opcional el autowired porque solo hay un constructor
-    public CheckoutServiceImpl(CustomerRepository _customerRepository,
+    public CheckoutServiceImpl(
+            CustomerRepository _customerRepository,
             @Value("${stripe.key.secret}") String secretKey) {
         this.customerRepository = _customerRepository;
 
@@ -85,7 +86,7 @@ public class CheckoutServiceImpl implements CheckoutService {
     @Override
     public PaymentIntent createPaymentIntent(PaymentInfo paymentInfo) throws StripeException {
         List<String> paymentMethodTypes = new ArrayList<>();
-        // solo aceptaremos credit card
+        // only accept credit card
         paymentMethodTypes.add("card");
         Map<String, Object> params = new HashMap<>();
         params.put("amount", paymentInfo.getAmount());
