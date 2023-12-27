@@ -10,4 +10,5 @@ public class PaymentInfo {
 
     private int amount; // representado en centimos
     private String currency;
+    private String receiptEmail;
 }
